@@ -14,9 +14,16 @@ last_processed_left_gesture = None
 last_processed_right_gesture = None
 
 def drums_up_down(activeDrumTrack, lockedGesture, last_processed): 
-    """Sendet MIDI-Signal nur wenn sich die gelockte Geste geändert hat."""
+    """Sendet MIDI-Signal wenn eine neue Geste gelockt wurde (auch wenn es dieselbe Geste ist)."""
+    # Prüfen ob die gelockte Geste None ist (entsperrt wurde)
+    if lockedGesture is None:
+        # Wenn die Geste entsperrt wurde, setze last_processed zurück
+        if last_processed is not None:
+            print("🔄 Gestenverarbeitung zurückgesetzt - bereit für neue Geste")
+        return None, activeDrumTrack
+    
     # Nur senden wenn die Geste sich geändert hat (neu gelockt wurde)
-    if lockedGesture != last_processed and lockedGesture is not None:
+    if lockedGesture != last_processed:
         print("Drum up/down Funktion aufgerufen")
         print(f"Neue gelockte Geste: {lockedGesture}")
         

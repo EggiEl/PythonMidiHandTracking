@@ -136,6 +136,11 @@ class HandTracker:
         current_time = time.time()
         
         if label == 'Left':
+            # Wenn die aktuelle Geste sich von der gelockten unterscheidet, unlock durchführen
+            if self.left_locked_gesture is not None and gesture != self.left_locked_gesture:
+                print(f"🔓 LINKE HAND GESTE ENTSPERRT: {self.left_locked_gesture}")
+                self.left_locked_gesture = None
+            
             # Wenn die Geste sich geändert hat, Timer zurücksetzen
             if gesture != self.left_current_gesture:
                 self.left_current_gesture = gesture
@@ -151,6 +156,11 @@ class HandTracker:
                     return True
         
         elif label == 'Right':
+            # Wenn die aktuelle Geste sich von der gelockten unterscheidet, unlock durchführen
+            if self.right_locked_gesture is not None and gesture != self.right_locked_gesture:
+                print(f"🔓 RECHTE HAND GESTE ENTSPERRT: {self.right_locked_gesture}")
+                self.right_locked_gesture = None
+            
             # Wenn die Geste sich geändert hat, Timer zurücksetzen
             if gesture != self.right_current_gesture:
                 self.right_current_gesture = gesture
