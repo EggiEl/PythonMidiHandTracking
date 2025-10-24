@@ -1,7 +1,6 @@
 from midimapper import MidiController
 from handTracking import HandTracker
 import cv2
-import time 
 
 midiController = MidiController('loopMIDI Port 1', channel=0)  # channel ggf. anpassen!
 
@@ -12,42 +11,6 @@ activeDrumTrack = -1
 # Track welche Geste zuletzt verarbeitet wurde
 last_processed_left_gesture = None
 last_processed_right_gesture = None
-
-def drums_up_down(activeDrumTrack, lockedGesture, last_processed): 
-    """Sendet MIDI-Signal wenn eine neue Geste gelockt wurde (auch wenn es dieselbe Geste ist)."""
-    # Prüfen ob die gelockte Geste None ist (entsperrt wurde)
-    if lockedGesture is None:
-        # Wenn die Geste entsperrt wurde, setze last_processed zurück
-        if last_processed is not None:
-            print("🔄 Gestenverarbeitung zurückgesetzt - bereit für neue Geste")
-        return None, activeDrumTrack
-    
-    # Nur senden wenn die Geste sich geändert hat (neu gelockt wurde)
-    if lockedGesture != last_processed:
-        print("Drum up/down Funktion aufgerufen")
-        print(f"Neue gelockte Geste: {lockedGesture}")
-        
-        if lockedGesture == "DAUMEN_HOCH":
-            activeDrumTrack += 1
-            # Begrenze den Wert
-            if activeDrumTrack > len(midiController.drums) - 1:
-                activeDrumTrack = len(midiController.drums) - 1
-            
-            print(f"🎵 Drum Up gesendet - Track {activeDrumTrack}, CC {midiController.drums[activeDrumTrack]}")
-            midiController.send_drum_up(activeDrumTrack)
-
-        elif lockedGesture == "DAUMEN_RUNTER":
-            activeDrumTrack -= 1
-            # Begrenze den Wert
-            if activeDrumTrack < 0:
-                activeDrumTrack = 0
-            
-            print(f"🎵 Drum Down gesendet - Track {activeDrumTrack}, CC {midiController.drums[activeDrumTrack]}")
-            midiController.send_drum_down(activeDrumTrack)
-        
-        return lockedGesture, activeDrumTrack  # Gebe beide Werte zurück
-    
-    return last_processed, activeDrumTrack  # Keine Änderung 
 
 #main Loop
 while handTracker.cap.isOpened():
@@ -62,7 +25,7 @@ while handTracker.cap.isOpened():
     cv2.imshow('Hand Gesture Tracking', annotated_image)
     
     # Nur senden wenn sich die gelockte Geste geändert hat
-    last_processed_left_gesture, activeDrumTrack = drums_up_down(activeDrumTrack, handTracker.left_locked_gesture, last_processed_left_gesture)
+    last_processed_left_gesture, activeDrumTrack = midiController.drums_up_down(activeDrumTrack, handTracker.left_locked_gesture, last_processed_left_gesture)
     
     # Beenden bei Tastendruck 'q'
     if cv2.waitKey(5) & 0xFF == ord('q'):

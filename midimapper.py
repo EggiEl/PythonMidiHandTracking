@@ -76,3 +76,39 @@ class MidiController:
         else:
             raise IndexError(f"drum_track {drum_track} außerhalb des Bereichs 0..{len(self.drums)-1}")
 
+    def drums_up_down(self, activeDrumTrack, lockedGesture, last_processed): 
+        """Sendet MIDI-Signal wenn eine neue Geste gelockt wurde (auch wenn es dieselbe Geste ist)."""
+        # Prüfen ob die gelockte Geste None ist (entsperrt wurde)
+        if lockedGesture is None:
+            # Wenn die Geste entsperrt wurde, setze last_processed zurück
+            if last_processed is not None:
+                print("🔄 Gestenverarbeitung zurückgesetzt - bereit für neue Geste")
+            return None, activeDrumTrack
+
+        # Nur senden wenn die Geste sich geändert hat (neu gelockt wurde)
+        if lockedGesture != last_processed:
+            print("Drum up/down Funktion aufgerufen")
+            print(f"Neue gelockte Geste: {lockedGesture}")
+
+            if lockedGesture == "DAUMEN_HOCH":
+                activeDrumTrack += 1
+                # Begrenze den Wert
+                if activeDrumTrack > len(self.drums) - 1:
+                    activeDrumTrack = len(self.drums) - 1
+
+                print(f"🎵 Drum Up gesendet - Track {activeDrumTrack}, CC {self.drums[activeDrumTrack]}")
+                self.send_drum_up(activeDrumTrack)
+
+            elif lockedGesture == "DAUMEN_RUNTER":
+                activeDrumTrack -= 1
+                # Begrenze den Wert
+                if activeDrumTrack < 0:
+                    activeDrumTrack = 0
+
+                print(f"🎵 Drum Down gesendet - Track {activeDrumTrack}, CC {self.drums[activeDrumTrack]}")
+                self.send_drum_down(activeDrumTrack)
+
+            return lockedGesture, activeDrumTrack  # Gebe beide Werte zurück
+
+        return last_processed, activeDrumTrack  # Keine Änderung 
+
